@@ -6,6 +6,7 @@ import fs from "fs";
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { ChromaClient } from 'chromadb';
+import { CHROMA_HOST, CHROMA_PORT } from '../config/config.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -64,14 +65,15 @@ class IngestionService {
             console.log(`Split into ${splitDocs.length} chunks`);
 
             const client = new ChromaClient({
-                host: 'localhost',
-                port: 8000
+                host: CHROMA_HOST,
+                port: CHROMA_PORT
             });
             try {
                 await client.deleteCollection({ name: 'course-documents' });
                 console.log('Old collection deleted');
             } catch (e) {
                 // Ignore if collection doesn't exist
+                console.log("Collection doesn't exist");
             }
 
             this.vectorStore = await Chroma.fromDocuments(
@@ -79,15 +81,15 @@ class IngestionService {
                 this.embeddings,
                 {
                     collectionName: 'course-documents',
-                    host: 'localhost',
-                    port: 8000
+                    host: CHROMA_HOST,
+                    port: CHROMA_PORT
                 }
             );
 
-            console.log(`✅ Successfully ingested ${splitDocs.length} chunks from ${files.length} PDFs into ChromaDB`);
+            console.log(` Successfully ingested ${splitDocs.length} chunks from ${files.length} PDFs into ChromaDB`);
             return true;
         } catch (error) {
-            console.error('❌ Ingestion error:', error.message || error);
+            console.error(' Ingestion error:', error.message || error);
             throw error;
         }
     }

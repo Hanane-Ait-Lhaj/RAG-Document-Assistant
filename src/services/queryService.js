@@ -1,19 +1,24 @@
 import { Chroma } from '@langchain/community/vectorstores/chroma';
 import { HuggingFaceTransformersEmbeddings } from '@langchain/community/embeddings/huggingface_transformers';
-import { HuggingFaceInference } from '@langchain/community/llms/hf';
+import { Ollama } from "@langchain/ollama";
 import { createStuffDocumentsChain } from "@langchain/classic/chains/combine_documents";
 import { createRetrievalChain } from "@langchain/classic/chains/retrieval";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { CHROMA_HOST, CHROMA_PORT } from '../config/config.js';
 
 class QueryService {
     constructor() {
         this.embeddings = new HuggingFaceTransformersEmbeddings({
             model: 'Xenova/all-MiniLM-L6-v2'
         });
-        this.llm = new HuggingFaceInference({
-            model: 'google/flan-t5-base',
-            apiKey: process.env.HF_API_KEY || 'free'
+
+        // Local Ollama LLM
+        this.llm = new Ollama({
+            model: "llama3.2",
+            temperature: 0.7
+            // baseUrl: "http://localhost:11434"  // default, only change if Ollama runs elsewhere
         });
+
         this.vectorStore = null;
         this.retrievalChain = null;
         this.initialized = false;
@@ -28,8 +33,8 @@ class QueryService {
                 this.embeddings,
                 {
                     collectionName: 'course-documents',
-                    host: 'localhost',  // Updated to avoid deprecation warning
-                    port: 8000
+                    host: CHROMA_HOST,
+                    port: CHROMA_PORT
                 }
             );
 
@@ -48,17 +53,16 @@ class QueryService {
 
             const retriever = this.vectorStore.asRetriever({ k: 6 });
 
-            // No wrapper needed anymore in v1.x – pass string directly
             this.retrievalChain = await createRetrievalChain({
                 combineDocsChain,
                 retriever,
             });
 
             this.initialized = true;
-            console.log('✅ Query service initialized successfully');
+            console.log(' Query service initialized successfully');
         } catch (error) {
-            console.error('❌ Error initializing query service:', error);
-            throw new Error('Failed to initialize. Ensure documents are ingested and Chroma server is running.');
+            console.error(' Error initializing query service:', error);
+            throw new Error('Failed to initialize. Make sure Chroma and Ollama are running.');
         }
     }
 
