@@ -1,0 +1,38 @@
+version: '3.9'
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: chroma
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    restart: unless-stopped
+
+  app:
+    build: .
+    container_name: rag-document-assistant
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./documents:/app/documents:ro   # Mount PDFs read-only
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - ollama
+      - chroma
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
+  chroma_data:

@@ -1,11 +1,10 @@
 import express from "express";
 import cors from "cors";
-import 'dotenv/config';
 import ingestionService from './services/ingestionService.js';
 import queryService from './services/queryService.js';
 
 export default class Server {
-  constructor(port = 8080) {
+  constructor(port = 3000) {
     this.port = port;
     this.app = express();
     this.config();
