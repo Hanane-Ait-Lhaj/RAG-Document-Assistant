@@ -15,8 +15,8 @@ class QueryService {
         // Local Ollama LLM
         this.llm = new Ollama({
             model: "llama3.2",
-            temperature: 0.7
-            // baseUrl: "http://localhost:11434"  // default, only change if Ollama runs elsewhere
+            temperature: 0.7,
+            baseUrl: process.env.OLLAMA_URL || "http://localhost:11434"  // default, only change if Ollama runs elsewhere
         });
 
         this.vectorStore = null;
@@ -33,8 +33,7 @@ class QueryService {
                 this.embeddings,
                 {
                     collectionName: 'course-documents',
-                    host: CHROMA_HOST,
-                    port: CHROMA_PORT
+                    url: `http://${CHROMA_HOST}:${CHROMA_PORT}`
                 }
             );
 

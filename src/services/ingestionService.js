@@ -68,21 +68,13 @@ class IngestionService {
                 host: CHROMA_HOST,
                 port: CHROMA_PORT
             });
-            try {
-                await client.deleteCollection({ name: 'course-documents' });
-                console.log('Old collection deleted');
-            } catch (e) {
-                // Ignore if collection doesn't exist
-                console.log("Collection doesn't exist");
-            }
 
             this.vectorStore = await Chroma.fromDocuments(
                 splitDocs,
                 this.embeddings,
                 {
                     collectionName: 'course-documents',
-                    host: CHROMA_HOST,
-                    port: CHROMA_PORT
+                    url: `http://${CHROMA_HOST}:${CHROMA_PORT}`
                 }
             );
 

@@ -9,6 +9,8 @@ services:
     volumes:
       - ollama_data:/root/.ollama
     restart: unless-stopped
+    networks:
+      - rag-network
 
   chroma:
     image: chromadb/chroma:latest
@@ -17,7 +19,11 @@ services:
       - "8000:8000"
     volumes:
       - chroma_data:/chroma/chroma
+    environment:
+      - CHROMA_SERVER_CORS_ALLOW_ORIGINS=*
     restart: unless-stopped
+    networks:
+      - rag-network
 
   app:
     build: .
@@ -25,13 +31,20 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./documents:/app/documents:ro   # Mount PDFs read-only
+      - ./documents:/app/documents:ro
     environment:
-      - NODE_ENV=production
+      - CHROMA_HOST=chroma
+      - CHROMA_PORT=8000
+      - OLLAMA_URL=http://ollama:11434
     depends_on:
       - ollama
       - chroma
     restart: unless-stopped
+    networks:
+      - rag-network
+
+networks:
+  rag-network:
 
 volumes:
   ollama_data:

@@ -1,10 +1,10 @@
-FROM node:22.20.0-alpine
+FROM node:22.20.0-slim
 WORKDIR /app
 
 # Copier package.json d'abord (cache Docker)
 COPY package*.json ./
 
-# Install only production dependencies
+# Install dependencies
 RUN npm install
 
 # Copier le code
